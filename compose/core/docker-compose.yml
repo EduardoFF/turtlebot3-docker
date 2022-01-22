@@ -1,0 +1,50 @@
+version: '3'
+services:
+  roscore:
+    network_mode: host
+    image: eduardofeo/ros-turtlebot3-melodic
+    restart: always
+    volumes:
+      - ./logs:/root/.ros/log:rw
+    env_file:
+      - ../ros.env
+    command: roscore
+  monitor:
+    image: jeguzzi/df:docker-ui
+    volumes:
+      - ./logs:/root/.ros/log:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: roslaunch --wait docker_ui monitor.launch 
+    network_mode: host
+    #restart: no
+    env_file:
+      - ../ros.env
+      - ../monitor.env
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "cat < /dev/null > /dev/tcp/localhost/11311"]
+      interval: 30s
+      timeout: 2s
+      retries: 3
+    depends_on:
+      - roscore
+
+  base:
+    network_mode: host
+    image: eduardofeo/ros-turtlebot3-melodic
+    privileged: true
+    restart: always
+    volumes:
+     - ./logs:/root/.ros/log:rw
+     - /sys/fs/cgroup:/sys/fs/cgroup:ro 
+     - /dev/ttyACM0:/dev/ttyACM0
+     - /dev/bus/usb:/dev/bus/usb
+
+    command: roslaunch --wait turtlebot3_bringup turtlebot3_robot.launch
+    depends_on:
+      - roscore
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "cat < /dev/null > /dev/tcp/localhost/11311"]
+      interval: 30s
+      timeout: 2s
+      retries: 3
+    env_file: ../ros.env
