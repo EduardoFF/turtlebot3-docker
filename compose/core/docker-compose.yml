@@ -49,3 +49,25 @@ services:
       timeout: 2s
       retries: 3
     env_file: ../ros.env
+
+  cam:
+    network_mode: host
+    image: eduardofeo/ros-turtlebot3-melodic-cam
+    privileged: true
+    restart: always
+    volumes:
+     - ./logs:/root/.ros/log:rw
+     - /sys/fs/cgroup:/sys/fs/cgroup:ro 
+     - /dev/:/dev/
+     - /dev/bus/usb:/dev/bus/usb
+     - ./launch/logitech.launch:/home/ros/logitech.launch
+     - ./launch/logitech.yaml:/home/ros/logitech.yaml
+    command: roslaunch --wait /home/ros/logitech.launch
+    depends_on:
+      - roscore
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "cat < /dev/null > /dev/tcp/localhost/11311"]
+      interval: 30s
+      timeout: 2s
+      retries: 3
+    env_file: ../ros.env
