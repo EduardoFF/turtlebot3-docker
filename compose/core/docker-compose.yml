@@ -36,7 +36,8 @@ services:
     volumes:
      - ./logs:/root/.ros/log:rw
      - /sys/fs/cgroup:/sys/fs/cgroup:ro 
-     - /dev/ttyACM0:/dev/ttyACM0
+     - /dev/:/dev/
+     - /dev/ttyUSB0:/dev/ttyUSB0
      - /dev/bus/usb:/dev/bus/usb
 
     command: roslaunch --wait turtlebot3_bringup turtlebot3_robot.launch
